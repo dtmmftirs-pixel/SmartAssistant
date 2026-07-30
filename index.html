@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Lab Chat Widget</title>
+  <title>Cak Parto - Smart Lab Assistant</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
@@ -49,9 +49,9 @@
       position: fixed;
       bottom: 20px;
       right: 20px;
-      width: 50%;       /* Diubah dari 340px menjadi 50% */
-      height: 80%;      /* Diubah dari calc(100vh - 120px) menjadi 80% */
-      max-width: 600px; /* Batas maksimal lebar agar tetap rapi di layar besar */
+      width: 50%;       /* Diubah menjadi 50% */
+      height: 80%;      /* Diubah menjadi 80% */
+      max-width: 600px; /* Batas maksimal lebar agar rapi di layar besar */
       min-height: 380px;
       background: white;
       border-radius: 16px;
@@ -117,7 +117,7 @@
       padding: 16px;
       background: #f8f9fa;
       min-height: 180px;
-      scroll-behavior: smooth; /* Tambahan untuk scroll halus saat resize */
+      scroll-behavior: smooth; /* Smooth scroll native CSS */
     }
     
     .message {
@@ -260,7 +260,7 @@
   </style>
 </head>
 <body>
-  <!-- Tombol Chat Floating (Ditambahkan icon 💬) -->
+  <!-- Tombol Chat Floating -->
   <button class="chat-button" id="chatButton" onclick="toggleChat()">
     💬
   </button>
@@ -277,7 +277,7 @@
     
     <div class="chat-box" id="chatBox">
       <div class="welcome-msg">
-        <strong>Halo! </strong><br><br>
+        <strong>Halo! 👋</strong><br><br>
         Saya Cak Parto, asisten virtual<br>
         Departemen Teknik Material dan Metalurgi<br>
         Silakan bertanya apapun.
@@ -324,6 +324,26 @@
       return text;
     }
     
+    // FUNGSI SMART SCROLL: Agar pertanyaan & jawaban terlihat bersama
+    function smartScroll(element) {
+      const chatBox = document.getElementById('chatBox');
+      
+      setTimeout(() => {
+        const chatBoxHeight = chatBox.clientHeight;
+        const elementHeight = element.offsetHeight;
+        const elementTop = element.offsetTop;
+        
+        // Rumus: Posisikan elemen agar bagian bawahnya berada ~120px dari dasar chat box.
+        // Ini memastikan pesan user di atasnya tetap terlihat, dan tidak mentok ke area input.
+        const targetScroll = elementTop - (chatBoxHeight - elementHeight - 120);
+        
+        chatBox.scrollTo({
+          top: Math.max(0, targetScroll),
+          behavior: 'smooth'
+        });
+      }, 100);
+    }
+
     function tampilkanPesanSedangBerpikir() {
       const chatBox = document.getElementById('chatBox');
       const thinkingDiv = document.createElement('div');
@@ -340,10 +360,8 @@
       `;
       
       chatBox.appendChild(thinkingDiv);
-      // Scroll ke bawah dengan offset agar tidak terlalu mepet
-      setTimeout(() => {
-        chatBox.scrollTop = chatBox.scrollHeight;
-      }, 50);
+      // Gunakan smartScroll alih-alih scrollHeight
+      smartScroll(thinkingDiv);
       return thinkingDiv.id;
     }
 
@@ -372,30 +390,27 @@
       chatHistory.push({ role: 'user', text: pesan });
       const thinkingId = tampilkanPesanSedangBerpikir();
       
-      // Gunakan APPS_SCRIPT_URL (dari config.js) dan metode GET
-      const url = new URL(APPS_SCRIPT_URL);
-      url.searchParams.set('action', 'chat');
-      url.searchParams.set('message', pesan);
-      url.searchParams.set('history', JSON.stringify(chatHistory.slice(-6)));
-      
-      fetch(url.toString(), {
-        method: 'GET'
+      // PERBAIKAN: Menggunakan metode POST untuk payload yang lebih stabil
+      fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'chat',
+          message: pesan,
+          history: chatHistory.slice(-6)
+        })
       })
-      .then(response => response.text())
-      .then(text => {
+      .then(response => response.json())
+      .then(data => {
         hapusPesanSedangBerpikir(thinkingId);
         
-        try {
-          const data = JSON.parse(text);
-          if (data.success) {
-            tampilkanPesan(data.reply, 'bot');
-            chatHistory.push({ role: 'bot', text: data.reply });
-          } else {
-            tampilkanPesan('⚠️ Error: ' + (data.error || 'Gagal memproses'), 'bot');
-          }
-        } catch (e) {
-          console.error('Parse error:', e, 'Raw text:', text);
-          tampilkanPesan('⚠️ Maaf, format respons tidak dikenali.', 'bot');
+        if (data.success) {
+          tampilkanPesan(data.reply, 'bot');
+          chatHistory.push({ role: 'bot', text: data.reply });
+        } else {
+          tampilkanPesan('⚠️ Error: ' + (data.error || 'Gagal memproses'), 'bot');
         }
       })
       .catch(error => {
@@ -415,10 +430,9 @@
       messageDiv.className = 'message ' + pengirim;
       messageDiv.innerHTML = markdownToHtml(teks);
       chatBox.appendChild(messageDiv);
-      // Scroll otomatis setelah pesan muncul
-      setTimeout(() => {
-        chatBox.scrollTop = chatBox.scrollHeight;
-      }, 50);
+      
+      // Gunakan smartScroll alih-alih scrollHeight
+      smartScroll(messageDiv);
     }
     
     // Auto open chat setelah 2 detik
