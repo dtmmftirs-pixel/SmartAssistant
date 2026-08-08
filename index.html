@@ -280,7 +280,7 @@
     .send-btn:hover { background: #0d5bb5; }
     .send-btn:disabled { background: #ccc; cursor: not-allowed; }
 
-        /* ✅ MODERN TABLE STYLES */
+    /* ✅ MODERN TABLE STYLES */
     .caksava-table-wrapper {
       overflow-x: auto;
       margin: 14px 0;
@@ -329,14 +329,12 @@
       transition: background-color 0.2s ease;
     }
     
-    /* Highlight angka/tarif di tabel */
     .caksava-table td.tarif {
       font-weight: 700;
       color: #1a73e8;
       white-space: nowrap;
     }
     
-    /* Responsive: stack table on very small screens */
     @media (max-width: 480px) {
       .caksava-table {
         font-size: 12px;
@@ -410,9 +408,8 @@
   
   <script>
     let chatHistory = [];
-    let currentMode = 'fast'; // ✅ Default mode
+    let currentMode = 'fast';
     
-    // ✅ MODE TOGGLE LOGIC
     function setMode(mode) {
       currentMode = mode;
       const btnFast = document.getElementById('btnFastMode');
@@ -436,80 +433,121 @@
       }
     }
     
+    // ✅ FIXED: markdownToHtml yang aman, tidak merusak JSON/response
     function markdownToHtml(text) {
-      if (!text) return '';
+      if (!text || typeof text !== 'string') return '';
       
-      // ✅ PARSE MARKDOWN TABLE → MODERN STYLED TABLE
-      text = text.replace(/((?:^\|.+\|\s*\n?)+)/gm, function(tableBlock) {
-        const rows = tableBlock.trim().split('\n').filter(r => r.trim() !== '');
-        if (rows.length < 2) return tableBlock;
+      // Escape HTML entities dulu untuk keamanan
+      let safe = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+      
+      // 1. Parse tabel markdown (sebelum escape merusak pipe)
+      // Kita pakai pendekatan baris-per-baris yang lebih aman
+      const lines = safe.split('\n');
+      let result = [];
+      let inTable = false;
+      let tableRows = [];
+      
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        const isTableRow = /^\|(.+\|)+$/.test(line);
+        const isSeparator = /^\|[\s\-:|]+\|$/.test(line);
         
-        let html = '<div class="caksava-table-wrapper"><table class="caksava-table">';
-        
-        // Parse header
-        const headerCells = rows[0].split('|').filter(c => c.trim() !== '');
-        html += '<thead><tr>';
-        headerCells.forEach(cell => {
-          html += `<th>${cell.trim()}</th>`;
+        if (isTableRow && !isSeparator) {
+          if (!inTable) {
+            inTable = true;
+            tableRows = [];
+          }
+          tableRows.push(line);
+        } else if (isSeparator && inTable) {
+          // Skip separator, tapi tetap dalam mode tabel
+          continue;
+        } else {
+          // Akhir dari blok tabel
+          if (inTable && tableRows.length >= 2) {
+            result.push(buildTable(tableRows));
+          }
+          inTable = false;
+          tableRows = [];
+          result.push(line);
+        }
+      }
+      
+      // Flush sisa tabel jika ada
+      if (inTable && tableRows.length >= 2) {
+        result.push(buildTable(tableRows));
+      }
+      
+      safe = result.join('\n');
+      
+      // 2. Inline formatting (setelah tabel diproses)
+      safe = safe.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      safe = safe.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
+      safe = safe.replace(/`(.+?)`/g, '<code>$1</code>');
+      
+      // 3. Headers
+      safe = safe.replace(/^### (.+)$/gm, '<h4 style="color:#1a73e8;margin:16px 0 8px;font-size:15px;">$1</h4>');
+      safe = safe.replace(/^## (.+)$/gm, '<h3 style="color:#1a73e8;margin:18px 0 10px;font-size:16px;">$1</h3>');
+      safe = safe.replace(/^# (.+)$/gm, '<h2 style="color:#1a73e8;margin:20px 0 12px;font-size:18px;">$1</h2>');
+      
+      // 4. Horizontal rule
+      safe = safe.replace(/^---$/gm, '<hr style="border:none;border-top:1px solid #e8ecf1;margin:16px 0;">');
+      
+      // 5. Lists
+      safe = safe.replace(/^\* (.+)$/gm, '<li style="margin:4px 0 4px 16px;color:#444;list-style-type:disc;">$1</li>');
+      safe = safe.replace(/^- (.+)$/gm, '<li style="margin:4px 0 4px 16px;color:#444;list-style-type:disc;">$1</li>');
+      safe = safe.replace(/^\d+\. (.+)$/gm, '<li style="margin:4px 0 4px 16px;color:#444;list-style-type:decimal;">$1</li>');
+      
+      // 6. Newlines → <br> (hanya yang bukan di tag HTML)
+      safe = safe.replace(/\n/g, '<br>');
+      
+      return safe;
+    }
+    
+    // ✅ Helper: Build table HTML dari array baris tabel
+    function buildTable(rows) {
+      if (rows.length < 2) return rows.join('<br>');
+      
+      // Parse header
+      const headerCells = rows[0].split('|').filter(c => c.trim() !== '');
+      
+      // Deteksi kolom tarif dari baris data pertama
+      const tarifCols = new Set();
+      if (rows.length > 1) {
+        const dataCells = rows[1].split('|').filter(c => c.trim() !== '');
+        dataCells.forEach((cell, idx) => {
+          const cleaned = cell.trim().replace(/[.,]/g, '');
+          if (/rp\s?\d/i.test(cell.trim()) || /^\d{3,}$/.test(cleaned)) {
+            tarifCols.add(idx);
+          }
         });
-        html += '</tr></thead>';
-        
-        // Detect which columns contain tarif/angka (untuk styling khusus)
-        const tarifColIndices = [];
-        if (rows.length > 2) {
-          const sampleRow = rows[2] || rows[1]; // Skip separator row
-          const sampleCells = sampleRow.split('|').filter(c => c.trim() !== '');
-          sampleCells.forEach((cell, idx) => {
-            const cleaned = cell.trim().replace(/[.,]/g, '');
-            // Deteksi kolom yang mengandung angka rupiah atau format tarif
-            if (/rp\s?\d/i.test(cell.trim()) || /^\d{3,}$/.test(cleaned)) {
-              tarifColIndices.push(idx);
-            }
-          });
-        }
-        
-        // Parse body rows
-        html += '<tbody>';
-        for (let i = 1; i < rows.length; i++) {
-          const row = rows[i].trim();
-          
-          // Skip separator row (|---|---| or |:---|---:| etc)
-          if (/^\|[\s\-:|]+\|$/.test(row)) continue;
-          
-          const cells = row.split('|').filter(c => c.trim() !== '');
-          html += '<tr>';
-          cells.forEach((cell, idx) => {
-            const isTarif = tarifColIndices.includes(idx);
-            const tdClass = isTarif ? ' class="tarif"' : '';
-            html += `<td${tdClass}>${cell.trim()}</td>`;
-          });
-          html += '</tr>';
-        }
-        html += '</tbody></table></div>';
-        
-        return html;
+      }
+      
+      let html = '<div class="caksava-table-wrapper"><table class="caksava-table">';
+      
+      // Header
+      html += '<thead><tr>';
+      headerCells.forEach(cell => {
+        html += '<th>' + cell.trim() + '</th>';
       });
+      html += '</tr></thead>';
       
-      // Bold (**text**)
-      text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-      // Italic (*text*)
-      text = text.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
-      // Inline code (`text`)
-      text = text.replace(/`(.*?)`/g, '<code>$1</code>');
-      // Headers (###, ##, #)
-      text = text.replace(/^### (.+)$/gm, '<h4 style="color:#1a73e8;margin:16px 0 8px;font-size:15px;">$1</h4>');
-      text = text.replace(/^## (.+)$/gm, '<h3 style="color:#1a73e8;margin:18px 0 10px;font-size:16px;">$1</h3>');
-      text = text.replace(/^# (.+)$/gm, '<h2 style="color:#1a73e8;margin:20px 0 12px;font-size:18px;">$1</h2>');
-      // Horizontal rule (---)
-      text = text.replace(/^---$/gm, '<hr style="border:none;border-top:1px solid #e8ecf1;margin:16px 0;">');
-      // Bullet points (* item or - item)
-      text = text.replace(/^[\*\-] (.+)$/gm, '<li style="margin:4px 0 4px 16px;color:#444;">$1</li>');
-      // Numbered lists (1. item)
-      text = text.replace(/^\d+\. (.+)$/gm, '<li style="margin:4px 0 4px 16px;color:#444;list-style-type:decimal;">$1</li>');
-      // New lines (yang bukan di dalam elemen HTML)
-      text = text.replace(/\n(?![<\w])/g, '<br>');
+      // Body
+      html += '<tbody>';
+      for (let i = 1; i < rows.length; i++) {
+        const cells = rows[i].split('|').filter(c => c.trim() !== '');
+        html += '<tr>';
+        cells.forEach((cell, idx) => {
+          const cls = tarifCols.has(idx) ? ' class="tarif"' : '';
+          html += '<td' + cls + '>' + cell.trim() + '</td>';
+        });
+        html += '</tr>';
+      }
+      html += '</tbody></table></div>';
       
-      return text;
+      return html;
     }
     
     function tampilkanPesanSedangBerpikir() {
@@ -567,7 +605,6 @@
       
       const thinkingId = tampilkanPesanSedangBerpikir();
       
-      // ✅ Kirim parameter mode ke backend
       const url = new URL(APPS_SCRIPT_URL);
       url.searchParams.set('action', 'chat');
       url.searchParams.set('message', pesan);
@@ -585,7 +622,7 @@
             tampilkanPesan(data.reply, 'bot');
             chatHistory.push({ role: 'bot', text: data.reply });
           } else {
-            tampilkanPesan('⚠️ Error: ' + (data.error || 'Gagal memproses'), 'bot');
+            tampilkanPesan('⚠️ Error: ' + (data.errorDetail || data.error || 'Gagal memproses'), 'bot');
           }
         } catch (e) {
           console.error('Parse error:', e, 'Raw text:', text);
