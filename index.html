@@ -279,6 +279,73 @@
     
     .send-btn:hover { background: #0d5bb5; }
     .send-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+        /* ✅ MODERN TABLE STYLES */
+    .caksava-table-wrapper {
+      overflow-x: auto;
+      margin: 14px 0;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      border: 1px solid #e8ecf1;
+    }
+    
+    .caksava-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    
+    .caksava-table thead th {
+      background: linear-gradient(135deg, #1a73e8 0%, #1557b0 100%);
+      color: white;
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      border-bottom: 2px solid #12479e;
+    }
+    
+    .caksava-table tbody td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #f0f2f5;
+      color: #333;
+      vertical-align: top;
+    }
+    
+    .caksava-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .caksava-table tbody tr:nth-child(even) {
+      background-color: #f8fafd;
+    }
+    
+    .caksava-table tbody tr:hover {
+      background-color: #eef4fc;
+      transition: background-color 0.2s ease;
+    }
+    
+    /* Highlight angka/tarif di tabel */
+    .caksava-table td.tarif {
+      font-weight: 700;
+      color: #1a73e8;
+      white-space: nowrap;
+    }
+    
+    /* Responsive: stack table on very small screens */
+    @media (max-width: 480px) {
+      .caksava-table {
+        font-size: 12px;
+      }
+      .caksava-table thead th,
+      .caksava-table tbody td {
+        padding: 8px 10px;
+      }
+    }
     
     /* Scrollbar Styling */
     ::-webkit-scrollbar { width: 6px; }
