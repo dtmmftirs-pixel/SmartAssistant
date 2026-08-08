@@ -58,6 +58,15 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden; /* Penting: agar gambar tidak keluar dari lingkaran */
+    }
+    
+    /* Tambahan CSS baru untuk gambarnya */
+    .icon-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* Agar gambar memenuhi area tanpa gepeng */
+      border-radius: 50%; /* Membuat gambar ikut melingkar */
     }
     
     .header-info h2 {
@@ -215,9 +224,9 @@
   <div class="main-container">
     <!-- Header -->
     <div class="header">
-      <div class="header-icon">
-        <img src="https://cak-sava.vercel.app/CakSAVA.ico" alt="Cak SAVA Icon" class="custom-icon">
-      </div>
+    <div class="header-icon">
+      <img src="https://cak-sava.vercel.app/CakSAVA.ico" alt="Cak SAVA Icon" class="icon-img">
+    </div>
       <div class="header-info">
         <h2>Cak SAVA</h2>
         <p>SmArt Virtual Assistant</p>
