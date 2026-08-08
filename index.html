@@ -22,7 +22,7 @@
     .main-container {
       width: 100%;
       height: 100%;
-      max-width: 900px; /* Batas lebar agar nyaman dibaca di desktop */
+      max-width: 900px;
       background: white;
       display: flex;
       flex-direction: column;
@@ -58,15 +58,14 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden; /* Penting: agar gambar tidak keluar dari lingkaran */
+      overflow: hidden;
     }
     
-    /* Tambahan CSS baru untuk gambarnya */
     .icon-img {
       width: 100%;
       height: 100%;
-      object-fit: cover; /* Agar gambar memenuhi area tanpa gepeng */
-      border-radius: 50%; /* Membuat gambar ikut melingkar */
+      object-fit: cover;
+      border-radius: 50%;
     }
     
     .header-info h2 {
@@ -137,16 +136,14 @@
     
     /* Welcome Card */
     .welcome-card {
-      /* Pastikan properti ini ada agar elemen di dalamnya bisa diatur posisinya */
       display: flex;
       flex-direction: column;
-      align-items: center; /* Membuat gambar dan teks rata tengah */
+      align-items: center;
       text-align: center;
       background: white;
       border: 1px solid #e0e0e0;
       border-radius: 12px;
       padding: 20px;
-      text-align: center;
       max-width: 600px;
       align-self: center;
       margin-top: 20px;
@@ -154,21 +151,11 @@
     }
 
     .caksava-avatar {
-      /* UKURAN DINAMIS: 
-         Minimal 60px, Idealnya 20% dari lebar container, Maksimal 100px.
-         Ini membuat gambar tidak pernah terlalu besar di desktop, 
-         tapi tetap proporsional di HP. */
       width: clamp(60px, 20vw, 100px); 
-      height: auto; /* Menjaga rasio aspek gambar agar tidak gepeng */
-      
-      /* Estetika: Membuat gambar bulat (opsional, hapus jika ingin kotak/asli) */
+      height: auto;
       border-radius: 50%; 
-      object-fit: cover; /* Agar gambar mengisi area bulat dengan rapi */
-      
-      /* Jarak bawah agar tidak menempel dengan teks "Halo" */
+      object-fit: cover;
       margin-bottom: 12px; 
-      
-      /* Optimasi Render */
       display: block;
     }
     
@@ -198,9 +185,66 @@
     
     /* Input Area */
     .input-container {
-      padding: 16px 24px;
+      padding: 12px 24px 16px;
       background: white;
       border-top: 1px solid #e0e0e0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* ✅ MODE TOGGLE STYLES */
+    .mode-toggle-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 4px;
+    }
+
+    .mode-toggle-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 14px;
+      border: 1.5px solid #ddd;
+      border-radius: 20px;
+      background: white;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      color: #666;
+      user-select: none;
+    }
+
+    .mode-toggle-btn:hover {
+      border-color: #aaa;
+    }
+
+    .mode-toggle-btn.active-fast {
+      background: #e8f5e9;
+      border-color: #4caf50;
+      color: #2e7d32;
+    }
+
+    .mode-toggle-btn.active-thinking {
+      background: #fff3e0;
+      border-color: #ff9800;
+      color: #e65100;
+    }
+
+    .mode-toggle-btn .mode-icon {
+      font-size: 14px;
+    }
+
+    .mode-label-hint {
+      font-size: 11px;
+      color: #999;
+      margin-left: auto;
+      font-style: italic;
+    }
+    
+    .input-row {
       display: flex;
       gap: 12px;
       align-items: center;
@@ -248,9 +292,9 @@
   <div class="main-container">
     <!-- Header -->
     <div class="header">
-    <div class="header-icon">
-      <img src="https://cak-sava.vercel.app/CakSAVA.ico" alt="Cak SAVA Icon" class="icon-img">
-    </div>
+      <div class="header-icon">
+        <img src="https://cak-sava.vercel.app/CakSAVA.ico" alt="Cak SAVA Icon" class="icon-img">
+      </div>
       <div class="header-info">
         <h2>Cak SAVA</h2>
         <p>SmArt Virtual Assistant</p>
@@ -259,27 +303,38 @@
     
     <!-- Chat Box -->
     <div class="chat-area" id="chatBox">
-    <div class="welcome-card">
-      <!-- Gambar Cak SAVA -->
-      <img 
-        src="https://cak-sava.vercel.app/CakSAVA.jpg" 
-        alt="Avatar Cak SAVA" 
-        class="caksava-avatar"
-        loading="lazy" 
-        decoding="async"
-      >
-      
-    <div>
-      Halo! 👋 Saya <strong style="font-size: 1.5em; font-weight: bold;"><span style="color: black;">Cak</span> <span style="color: #1a73e8;">SAVA</span></strong>, SmArt Virtual Assistant.
-    </div>
-      Silakan bertanya tentang Akademik, Keuangan Mahasiswa, Fasilitas atau Prosedur Pengujian di laboratorium.</p>
-    </div>
+      <div class="welcome-card">
+        <img 
+          src="https://cak-sava.vercel.app/CakSAVA.jpg" 
+          alt="Avatar Cak SAVA" 
+          class="caksava-avatar"
+          loading="lazy" 
+          decoding="async"
+        >
+        <div>
+          Halo! 👋 Saya <strong style="font-size: 1.5em; font-weight: bold;"><span style="color: black;">Cak</span> <span style="color: #1a73e8;">SAVA</span></strong>, SmArt Virtual Assistant.
+        </div>
+        <p>Silakan bertanya tentang Akademik, Keuangan Mahasiswa, Fasilitas atau Prosedur Pengujian di laboratorium.</p>
+      </div>
     </div>
     
     <!-- Input Area -->
     <div class="input-container">
-      <input type="text" id="userInput" class="input-field" placeholder="Ketik pertanyaan Anda..." onkeypress="handleEnter(event)">
-      <button id="sendBtn" class="send-btn" onclick="kirimPesan()">Kirim</button>
+      <!-- ✅ MODE TOGGLE -->
+      <div class="mode-toggle-container">
+        <button id="btnFastMode" class="mode-toggle-btn active-fast" onclick="setMode('fast')">
+          <span class="mode-icon">⚡</span> Fast Mode
+        </button>
+        <button id="btnThinkingMode" class="mode-toggle-btn" onclick="setMode('thinking')">
+          <span class="mode-icon">🧠</span> Thinking Mode
+        </button>
+        <span id="modeHint" class="mode-label-hint">Respons cepat & ringkas</span>
+      </div>
+
+      <div class="input-row">
+        <input type="text" id="userInput" class="input-field" placeholder="Ketik pertanyaan Anda..." onkeypress="handleEnter(event)">
+        <button id="sendBtn" class="send-btn" onclick="kirimPesan()">Kirim</button>
+      </div>
     </div>
   </div>
 
@@ -287,9 +342,26 @@
   <script src="config.js"></script>
   
   <script>
-    // === LOGIKA JAVASCRIPT (SAMA PERSIS DENGAN WIDGET.HTML) ===
-    
     let chatHistory = [];
+    let currentMode = 'fast'; // ✅ Default mode
+    
+    // ✅ MODE TOGGLE LOGIC
+    function setMode(mode) {
+      currentMode = mode;
+      const btnFast = document.getElementById('btnFastMode');
+      const btnThinking = document.getElementById('btnThinkingMode');
+      const hint = document.getElementById('modeHint');
+      
+      if (mode === 'fast') {
+        btnFast.className = 'mode-toggle-btn active-fast';
+        btnThinking.className = 'mode-toggle-btn';
+        hint.textContent = 'Respons cepat & ringkas';
+      } else {
+        btnFast.className = 'mode-toggle-btn';
+        btnThinking.className = 'mode-toggle-btn active-thinking';
+        hint.textContent = 'Respons detail & mendalam';
+      }
+    }
     
     function handleEnter(event) {
       if (event.key === 'Enter') {
@@ -299,13 +371,9 @@
     
     function markdownToHtml(text) {
       if (!text) return '';
-      // Bold
       text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-      // Italic
       text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
-      // Code
       text = text.replace(/`(.*?)`/g, '<code>$1</code>');
-      // New lines
       text = text.replace(/\n/g, '<br>');
       return text;
     }
@@ -316,12 +384,14 @@
       thinkingDiv.className = 'message bot';
       thinkingDiv.id = 'thinking-' + Date.now();
       
+      const labelText = currentMode === 'thinking' ? 'Sedang berpikir mendalam...' : 'Sedang berpikir...';
+      
       thinkingDiv.innerHTML = `
         <div style="display: flex; align-items: center; gap: 8px;">
           <div class="thinking-dots">
             <span></span><span></span><span></span>
           </div>
-          <span style="font-style: italic; color: #666; font-size: 12px;">Sedang berpikir</span>
+          <span style="font-style: italic; color: #666; font-size: 12px;">${labelText}</span>
         </div>
       `;
       
@@ -353,27 +423,23 @@
       
       if (!pesan) return;
       
-      // 1. Tampilkan pesan user
       tampilkanPesan(pesan, 'user');
       input.value = '';
       
-      // 2. Disable button
       sendBtn.disabled = true;
       sendBtn.textContent = '...';
       
-      // 3. Update history
       chatHistory.push({ role: 'user', text: pesan });
       
-      // 4. Tampilkan animasi berpikir
       const thinkingId = tampilkanPesanSedangBerpikir();
       
-      // 5. Siapkan URL Fetch (GET Method)
+      // ✅ Kirim parameter mode ke backend
       const url = new URL(APPS_SCRIPT_URL);
       url.searchParams.set('action', 'chat');
       url.searchParams.set('message', pesan);
+      url.searchParams.set('mode', currentMode);
       url.searchParams.set('history', JSON.stringify(chatHistory.slice(-6)));
       
-      // 6. Fetch Data
       fetch(url.toString(), { method: 'GET' })
       .then(response => response.text())
       .then(text => {
