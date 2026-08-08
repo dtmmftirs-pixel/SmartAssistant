@@ -279,71 +279,6 @@
     
     .send-btn:hover { background: #0d5bb5; }
     .send-btn:disabled { background: #ccc; cursor: not-allowed; }
-
-    /* ✅ MODERN TABLE STYLES */
-    .caksava-table-wrapper {
-      overflow-x: auto;
-      margin: 14px 0;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      border: 1px solid #e8ecf1;
-    }
-    
-    .caksava-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-      line-height: 1.5;
-    }
-    
-    .caksava-table thead th {
-      background: linear-gradient(135deg, #1a73e8 0%, #1557b0 100%);
-      color: white;
-      padding: 12px 14px;
-      text-align: left;
-      font-weight: 600;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      white-space: nowrap;
-      border-bottom: 2px solid #12479e;
-    }
-    
-    .caksava-table tbody td {
-      padding: 10px 14px;
-      border-bottom: 1px solid #f0f2f5;
-      color: #333;
-      vertical-align: top;
-    }
-    
-    .caksava-table tbody tr:last-child td {
-      border-bottom: none;
-    }
-    
-    .caksava-table tbody tr:nth-child(even) {
-      background-color: #f8fafd;
-    }
-    
-    .caksava-table tbody tr:hover {
-      background-color: #eef4fc;
-      transition: background-color 0.2s ease;
-    }
-    
-    .caksava-table td.tarif {
-      font-weight: 700;
-      color: #1a73e8;
-      white-space: nowrap;
-    }
-    
-    @media (max-width: 480px) {
-      .caksava-table {
-        font-size: 12px;
-      }
-      .caksava-table thead th,
-      .caksava-table tbody td {
-        padding: 8px 10px;
-      }
-    }
     
     /* Scrollbar Styling */
     ::-webkit-scrollbar { width: 6px; }
@@ -408,8 +343,9 @@
   
   <script>
     let chatHistory = [];
-    let currentMode = 'fast';
+    let currentMode = 'fast'; // ✅ Default mode
     
+    // ✅ MODE TOGGLE LOGIC
     function setMode(mode) {
       currentMode = mode;
       const btnFast = document.getElementById('btnFastMode');
@@ -433,121 +369,13 @@
       }
     }
     
-    // ✅ FIXED: markdownToHtml yang aman, tidak merusak JSON/response
     function markdownToHtml(text) {
-      if (!text || typeof text !== 'string') return '';
-      
-      // Escape HTML entities dulu untuk keamanan
-      let safe = text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-      
-      // 1. Parse tabel markdown (sebelum escape merusak pipe)
-      // Kita pakai pendekatan baris-per-baris yang lebih aman
-      const lines = safe.split('\n');
-      let result = [];
-      let inTable = false;
-      let tableRows = [];
-      
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-        const isTableRow = /^\|(.+\|)+$/.test(line);
-        const isSeparator = /^\|[\s\-:|]+\|$/.test(line);
-        
-        if (isTableRow && !isSeparator) {
-          if (!inTable) {
-            inTable = true;
-            tableRows = [];
-          }
-          tableRows.push(line);
-        } else if (isSeparator && inTable) {
-          // Skip separator, tapi tetap dalam mode tabel
-          continue;
-        } else {
-          // Akhir dari blok tabel
-          if (inTable && tableRows.length >= 2) {
-            result.push(buildTable(tableRows));
-          }
-          inTable = false;
-          tableRows = [];
-          result.push(line);
-        }
-      }
-      
-      // Flush sisa tabel jika ada
-      if (inTable && tableRows.length >= 2) {
-        result.push(buildTable(tableRows));
-      }
-      
-      safe = result.join('\n');
-      
-      // 2. Inline formatting (setelah tabel diproses)
-      safe = safe.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-      safe = safe.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
-      safe = safe.replace(/`(.+?)`/g, '<code>$1</code>');
-      
-      // 3. Headers
-      safe = safe.replace(/^### (.+)$/gm, '<h4 style="color:#1a73e8;margin:16px 0 8px;font-size:15px;">$1</h4>');
-      safe = safe.replace(/^## (.+)$/gm, '<h3 style="color:#1a73e8;margin:18px 0 10px;font-size:16px;">$1</h3>');
-      safe = safe.replace(/^# (.+)$/gm, '<h2 style="color:#1a73e8;margin:20px 0 12px;font-size:18px;">$1</h2>');
-      
-      // 4. Horizontal rule
-      safe = safe.replace(/^---$/gm, '<hr style="border:none;border-top:1px solid #e8ecf1;margin:16px 0;">');
-      
-      // 5. Lists
-      safe = safe.replace(/^\* (.+)$/gm, '<li style="margin:4px 0 4px 16px;color:#444;list-style-type:disc;">$1</li>');
-      safe = safe.replace(/^- (.+)$/gm, '<li style="margin:4px 0 4px 16px;color:#444;list-style-type:disc;">$1</li>');
-      safe = safe.replace(/^\d+\. (.+)$/gm, '<li style="margin:4px 0 4px 16px;color:#444;list-style-type:decimal;">$1</li>');
-      
-      // 6. Newlines → <br> (hanya yang bukan di tag HTML)
-      safe = safe.replace(/\n/g, '<br>');
-      
-      return safe;
-    }
-    
-    // ✅ Helper: Build table HTML dari array baris tabel
-    function buildTable(rows) {
-      if (rows.length < 2) return rows.join('<br>');
-      
-      // Parse header
-      const headerCells = rows[0].split('|').filter(c => c.trim() !== '');
-      
-      // Deteksi kolom tarif dari baris data pertama
-      const tarifCols = new Set();
-      if (rows.length > 1) {
-        const dataCells = rows[1].split('|').filter(c => c.trim() !== '');
-        dataCells.forEach((cell, idx) => {
-          const cleaned = cell.trim().replace(/[.,]/g, '');
-          if (/rp\s?\d/i.test(cell.trim()) || /^\d{3,}$/.test(cleaned)) {
-            tarifCols.add(idx);
-          }
-        });
-      }
-      
-      let html = '<div class="caksava-table-wrapper"><table class="caksava-table">';
-      
-      // Header
-      html += '<thead><tr>';
-      headerCells.forEach(cell => {
-        html += '<th>' + cell.trim() + '</th>';
-      });
-      html += '</tr></thead>';
-      
-      // Body
-      html += '<tbody>';
-      for (let i = 1; i < rows.length; i++) {
-        const cells = rows[i].split('|').filter(c => c.trim() !== '');
-        html += '<tr>';
-        cells.forEach((cell, idx) => {
-          const cls = tarifCols.has(idx) ? ' class="tarif"' : '';
-          html += '<td' + cls + '>' + cell.trim() + '</td>';
-        });
-        html += '</tr>';
-      }
-      html += '</tbody></table></div>';
-      
-      return html;
+      if (!text) return '';
+      text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+      text = text.replace(/`(.*?)`/g, '<code>$1</code>');
+      text = text.replace(/\n/g, '<br>');
+      return text;
     }
     
     function tampilkanPesanSedangBerpikir() {
@@ -605,6 +433,7 @@
       
       const thinkingId = tampilkanPesanSedangBerpikir();
       
+      // ✅ Kirim parameter mode ke backend
       const url = new URL(APPS_SCRIPT_URL);
       url.searchParams.set('action', 'chat');
       url.searchParams.set('message', pesan);
@@ -622,7 +451,7 @@
             tampilkanPesan(data.reply, 'bot');
             chatHistory.push({ role: 'bot', text: data.reply });
           } else {
-            tampilkanPesan('⚠️ Error: ' + (data.errorDetail || data.error || 'Gagal memproses'), 'bot');
+            tampilkanPesan('⚠️ Error: ' + (data.error || 'Gagal memproses'), 'bot');
           }
         } catch (e) {
           console.error('Parse error:', e, 'Raw text:', text);
