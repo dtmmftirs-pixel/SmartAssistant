@@ -137,6 +137,11 @@
     
     /* Welcome Card */
     .welcome-card {
+      /* Pastikan properti ini ada agar elemen di dalamnya bisa diatur posisinya */
+      display: flex;
+      flex-direction: column;
+      align-items: center; /* Membuat gambar dan teks rata tengah */
+      text-align: center;
       background: white;
       border: 1px solid #e0e0e0;
       border-radius: 12px;
@@ -146,6 +151,25 @@
       align-self: center;
       margin-top: 20px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+    }
+
+    .caksava-avatar {
+      /* UKURAN DINAMIS: 
+         Minimal 60px, Idealnya 20% dari lebar container, Maksimal 100px.
+         Ini membuat gambar tidak pernah terlalu besar di desktop, 
+         tapi tetap proporsional di HP. */
+      width: clamp(60px, 20vw, 100px); 
+      height: auto; /* Menjaga rasio aspek gambar agar tidak gepeng */
+      
+      /* Estetika: Membuat gambar bulat (opsional, hapus jika ingin kotak/asli) */
+      border-radius: 50%; 
+      object-fit: cover; /* Agar gambar mengisi area bulat dengan rapi */
+      
+      /* Jarak bawah agar tidak menempel dengan teks "Halo" */
+      margin-bottom: 12px; 
+      
+      /* Optimasi Render */
+      display: block;
     }
     
     .welcome-card h3 { color: #1a73e8; margin-bottom: 8px; }
@@ -237,7 +261,13 @@
     <div class="chat-area" id="chatBox">
     <div class="welcome-card">
       <!-- Gambar Cak SAVA -->
-      <img src="https://cak-sava.vercel.app/CakSAVA.jpg" alt="Cak SAVA Mascot" class="caksava-avatar">
+      <img 
+        src="https://cak-sava.vercel.app/CakSAVA.jpg" 
+        alt="Avatar Cak SAVA" 
+        class="caksava-avatar"
+        loading="lazy" 
+        decoding="async"
+      >
       
       <h3>Halo! 👋</h3>
       <p>Saya Cak SAVA, SmArt Virtual Assistant.<br>
